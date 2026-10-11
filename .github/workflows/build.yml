@@ -5,6 +5,7 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -14,8 +15,8 @@ jobs:
         run: |
           gh release download --repo AutoHotkey/AutoHotkey -p 'AutoHotkey_2*.zip' -O ahk.zip
           gh release download --repo AutoHotkey/Ahk2Exe -p 'Ahk2Exe*.zip' -O a2e.zip
-          Expand-Archive ahk.zip ahk; Expand-Archive a2e.zip a2e
-          Start-Process -Wait -FilePath (Resolve-Path a2e/Ahk2Exe.exe) -ArgumentList '/in',"$PWD\HebFix.ahk",'/out',"$PWD\HebFix.exe",'/base',"$PWD\ahk\v2\AutoHotkey64.exe"
+          Expand-Archive ahk.zip ahk; Expand-Archive a2e.zip a2e; Get-ChildItem -Recurse -Filter *.exe ahk,a2e | Select -Expand FullName
+          Start-Process -Wait -FilePath (Resolve-Path a2e/Ahk2Exe.exe) -ArgumentList '/in',"$PWD\HebFix.ahk",'/out',"$PWD\HebFix.exe",'/base',"$PWD\ahk\v2\AutoHotkey64.exe",'/silent','verbose'
           if (!(Test-Path HebFix.exe)) { Get-ChildItem -Recurse ahk | Select -First 20; throw "compile failed" }
           Get-Item HebFix.exe
       - name: Attach to release
